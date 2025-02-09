@@ -56,7 +56,7 @@ with st.form("review_form", clear_on_submit=True):
             else:
                 st.info("리뷰가 추가되었습니다. 페이지를 수동으로 새로고침해주세요.")
 
-st.write("## 제출된 리뷰")
+st.write("## 고객 리뷰")
 
 cur = conn.cursor()
 cur.execute("SELECT id, menu, text, rating FROM reviews ORDER BY id DESC")
