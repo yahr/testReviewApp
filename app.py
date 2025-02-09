@@ -65,13 +65,12 @@ if rows:
         st.markdown(f"**리뷰:** {text}")
         st.markdown(f"**별점:** {rating}")
         st.markdown(f"**등록일시:** {created_at}")
-        # 관리자 댓글 대신 Riley 댓글로 표시
         if admin_comment != "":
             st.markdown(f"**Riley 댓글:** {admin_comment}")
         
-        # --- 관리자 삭제 기능 (토글 형태, 제목: "삭제") ---
+        # --- Riley 삭제 기능 (토글 형태, 제목: "삭제") ---
         with st.expander("삭제"):
-            delete_pass = st.text_input("관리자 비밀번호 (삭제용)", type="password", key=f"delete_password_{review_id}")
+            delete_pass = st.text_input("Riley 비밀번호 (삭제용)", type="password", key=f"delete_password_{review_id}")
             if st.button("리뷰 삭제", key=f"delete_{review_id}"):
                 if delete_pass == "0328":
                     conn.execute("DELETE FROM reviews WHERE id = ?", (review_id,))
@@ -84,11 +83,10 @@ if rows:
                 else:
                     st.error("비밀번호가 틀렸습니다. 리뷰를 삭제할 수 없습니다.")
         
-        # --- 관리자 댓글 기능 (토글 형태, 제목: "Riley 댓글") ---
-        with st.expander("Riley 댓글"):
-            # 입력 라벨 변경: 관리자 댓글 입력 -> Riley 댓글 입력
+        # --- Riley 댓글 기능 (토글 형태, 제목: "댓글") ---
+        with st.expander("댓글"):
             admin_comment_input = st.text_area("Riley 댓글 입력", key=f"admin_comment_input_{review_id}")
-            comment_pass = st.text_input("관리자 비밀번호 (댓글 추가용)", type="password", key=f"admin_comment_password_{review_id}")
+            comment_pass = st.text_input("Riley 비밀번호 (댓글 추가용)", type="password", key=f"admin_comment_password_{review_id}")
             if st.button("댓글 추가", key=f"add_comment_{review_id}"):
                 if comment_pass == "0328":
                     conn.execute("UPDATE reviews SET admin_comment = ? WHERE id = ?", (admin_comment_input, review_id))
@@ -120,7 +118,6 @@ with st.form("review_form", clear_on_submit=True):
         elif review_text.strip() == "":
             st.error("리뷰 내용을 입력해주세요!")
         else:
-            # 새 리뷰 삽입 시, created_at 값을 CURRENT_TIMESTAMP 로 지정
             conn.execute(
                 "INSERT INTO reviews (menu, text, rating, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
                 (menu_name, review_text, rating)
