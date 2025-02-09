@@ -29,7 +29,7 @@ def init_db():
 
 conn = init_db()
 
-st.title("리뷰 앱")
+st.title("Riley 식당")
 st.write("오늘의 메뉴 이름과 리뷰 내용을 남기고 별점을 주세요!")
 
 # 리뷰 입력 폼
