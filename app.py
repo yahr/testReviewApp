@@ -35,53 +35,29 @@ def init_db():
 
 conn = init_db()
 
+# 앱 제목 및 설명
 st.title("Riley 식당")
 st.write("오늘의 메뉴 이름과 리뷰 내용을 남기고 별점을 주세요!")
 
-# 좌측에는 고객 리뷰(리뷰 리스트), 우측에는 리뷰 작성(리뷰 폼)을 표시하는 두 개의 컬럼 생성
-col_reviews, col_form = st.columns([2, 1])
+# ----------------- 고객 리뷰 리스트 -----------------
+st.subheader("고객 리뷰")
 
-with col_form:
-    st.subheader("리뷰 작성")
-    with st.form("review_form", clear_on_submit=True):
-        menu_name = st.text_input("오늘의 메뉴 이름을 입력하세요")
-        review_text = st.text_area("리뷰 내용 입력", height=150)
-        rating = st.slider("별점 선택 (1~5)", 1, 5, 3)
-        submitted = st.form_submit_button("리뷰 제출")
-        
-        if submitted:
-            if menu_name.strip() == "":
-                st.error("오늘의 메뉴 이름을 입력해주세요!")
-            elif review_text.strip() == "":
-                st.error("리뷰 내용을 입력해주세요!")
-            else:
-                conn.execute(
-                    "INSERT INTO reviews (menu, text, rating) VALUES (?, ?, ?)",
-                    (menu_name, review_text, rating)
-                )
-                conn.commit()
-                st.success("리뷰가 제출되었습니다!")
-                if hasattr(st, "experimental_rerun"):
-                    st.experimental_rerun()
-                else:
-                    st.info("리뷰가 추가되었습니다. 페이지를 수동으로 새로고침해주세요.")
+cur = conn.cursor()
+cur.execute("SELECT id, menu, text, rating, admin_comment FROM reviews ORDER BY id DESC")
+rows = cur.fetchall()
 
-with col_reviews:
-    st.subheader("고객 리뷰")
-    cur = conn.cursor()
-    cur.execute("SELECT id, menu, text, rating, admin_comment FROM reviews ORDER BY id DESC")
-    rows = cur.fetchall()
+if rows:
+    for review in rows:
+        review_id, menu, text, rating, admin_comment = review
 
-    if rows:
-        for review in rows:
-            review_id, menu, text, rating, admin_comment = review
-            st.markdown(f"**오늘의 메뉴:** {menu}")
-            st.markdown(f"**리뷰:** {text}")
-            st.markdown(f"**별점:** {rating}")
-            if admin_comment != "":
-                st.markdown(f"**관리자 댓글:** {admin_comment}")
-            
-            # --- 리뷰 삭제 기능 (관리자 비밀번호 필요) ---
+        st.markdown(f"**오늘의 메뉴:** {menu}")
+        st.markdown(f"**리뷰:** {text}")
+        st.markdown(f"**별점:** {rating}")
+        if admin_comment != "":
+            st.markdown(f"**관리자 댓글:** {admin_comment}")
+
+        # 토글 형태로 관리자 삭제 기능
+        with st.expander("관리자 삭제 기능"):
             delete_pass = st.text_input("관리자 비밀번호 (삭제용)", type="password", key=f"delete_password_{review_id}")
             if st.button("리뷰 삭제", key=f"delete_{review_id}"):
                 if delete_pass == "0328":
@@ -94,8 +70,9 @@ with col_reviews:
                         st.info("리뷰가 삭제되었습니다. 페이지를 수동으로 새로고침해주세요.")
                 else:
                     st.error("비밀번호가 틀렸습니다. 리뷰를 삭제할 수 없습니다.")
-            
-            # --- 관리자 댓글 추가 기능 (관리자 비밀번호 필요) ---
+
+        # 토글 형태로 관리자 댓글 추가 기능
+        with st.expander("관리자 댓글 추가"):
             admin_comment_input = st.text_area("관리자 댓글 입력", key=f"admin_comment_input_{review_id}")
             comment_pass = st.text_input("관리자 비밀번호 (댓글 추가용)", type="password", key=f"admin_comment_password_{review_id}")
             if st.button("댓글 추가", key=f"add_comment_{review_id}"):
@@ -109,6 +86,33 @@ with col_reviews:
                         st.info("댓글이 추가되었습니다. 페이지를 수동으로 새로고침해주세요.")
                 else:
                     st.error("비밀번호가 틀렸습니다. 댓글을 추가할 수 없습니다.")
-            st.markdown("---")
-    else:
-        st.write("아직 제출된 리뷰가 없습니다.")
+        st.markdown("---")
+else:
+    st.write("아직 제출된 리뷰가 없습니다.")
+
+st.markdown("---")
+
+# ----------------- 리뷰 작성 폼 (아래쪽 배치) -----------------
+st.subheader("리뷰 작성")
+with st.form("review_form", clear_on_submit=True):
+    menu_name = st.text_input("오늘의 메뉴 이름을 입력하세요")
+    review_text = st.text_area("리뷰 내용 입력", height=150)
+    rating = st.slider("별점 선택 (1~5)", 1, 5, 3)
+    submitted = st.form_submit_button("리뷰 제출")
+    
+    if submitted:
+        if menu_name.strip() == "":
+            st.error("오늘의 메뉴 이름을 입력해주세요!")
+        elif review_text.strip() == "":
+            st.error("리뷰 내용을 입력해주세요!")
+        else:
+            conn.execute(
+                "INSERT INTO reviews (menu, text, rating) VALUES (?, ?, ?)",
+                (menu_name, review_text, rating)
+            )
+            conn.commit()
+            st.success("리뷰가 제출되었습니다!")
+            if hasattr(st, "experimental_rerun"):
+                st.experimental_rerun()
+            else:
+                st.info("리뷰가 추가되었습니다. 페이지를 수동으로 새로고침해주세요.")
