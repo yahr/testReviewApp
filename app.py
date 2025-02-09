@@ -1,30 +1,27 @@
+import os
 import streamlit as st
 import sqlite3
+
+# DB 파일 경로를 /tmp 디렉토리로 설정 (Streamlit Cloud와 같은 환경에서 쓰기가 가능한 경로)
+DB_PATH = os.path.join("/tmp", "reviews.db")
 
 # 데이터베이스 초기화 및 스키마 업데이트
 @st.cache_resource
 def init_db():
-    conn = sqlite3.connect("reviews.db", check_same_thread=False)
-    # 기존 테이블 생성 (기존에 테이블이 없을 경우만 생성)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    
+    # 기존 테이블이 없으면 생성 (처음 실행 시 생성)
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS reviews (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            menu TEXT NOT NULL,
             text TEXT NOT NULL,
             rating INTEGER NOT NULL
         )
         """
     )
     conn.commit()
-
-    # 테이블에 'menu' 컬럼이 있는지 확인
-    cur = conn.cursor()
-    cur.execute("PRAGMA table_info(reviews)")
-    columns = [col[1] for col in cur.fetchall()]
-    if "menu" not in columns:
-        # 'menu' 컬럼이 없으면 추가 (기본값은 빈 문자열)
-        conn.execute("ALTER TABLE reviews ADD COLUMN menu TEXT NOT NULL DEFAULT ''")
-        conn.commit()
     return conn
 
 conn = init_db()
