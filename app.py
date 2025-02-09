@@ -36,7 +36,6 @@ def init_db():
         conn.commit()
 
     # 누락된 경우, 등록일시(created_at) 컬럼 추가  
-    # (SQLite는 non-constant default를 허용하지 않으므로 default 없이 추가하고, 이후 업데이트)
     if "created_at" not in columns:
         conn.execute("ALTER TABLE reviews ADD COLUMN created_at DATETIME")
         # 기존 행에 대해 created_at 값이 NULL인 경우 현재 시각으로 업데이트
@@ -66,8 +65,9 @@ if rows:
         st.markdown(f"**리뷰:** {text}")
         st.markdown(f"**별점:** {rating}")
         st.markdown(f"**등록일시:** {created_at}")
+        # 관리자 댓글 대신 Riley 댓글로 표시
         if admin_comment != "":
-            st.markdown(f"**관리자 댓글:** {admin_comment}")
+            st.markdown(f"**Riley 댓글:** {admin_comment}")
         
         # --- 관리자 삭제 기능 (토글 형태, 제목: "삭제") ---
         with st.expander("삭제"):
@@ -84,15 +84,16 @@ if rows:
                 else:
                     st.error("비밀번호가 틀렸습니다. 리뷰를 삭제할 수 없습니다.")
         
-        # --- 관리자 댓글 기능 (토글 형태, 제목: "댓글") ---
-        with st.expander("댓글"):
-            admin_comment_input = st.text_area("관리자 댓글 입력", key=f"admin_comment_input_{review_id}")
+        # --- 관리자 댓글 기능 (토글 형태, 제목: "Riley 댓글") ---
+        with st.expander("Riley 댓글"):
+            # 입력 라벨 변경: 관리자 댓글 입력 -> Riley 댓글 입력
+            admin_comment_input = st.text_area("Riley 댓글 입력", key=f"admin_comment_input_{review_id}")
             comment_pass = st.text_input("관리자 비밀번호 (댓글 추가용)", type="password", key=f"admin_comment_password_{review_id}")
             if st.button("댓글 추가", key=f"add_comment_{review_id}"):
                 if comment_pass == "0328":
                     conn.execute("UPDATE reviews SET admin_comment = ? WHERE id = ?", (admin_comment_input, review_id))
                     conn.commit()
-                    st.success("관리자 댓글이 추가되었습니다!")
+                    st.success("Riley 댓글이 추가되었습니다!")
                     if hasattr(st, "experimental_rerun"):
                         st.experimental_rerun()
                     else:
