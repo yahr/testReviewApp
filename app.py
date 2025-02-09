@@ -57,7 +57,7 @@ if rows:
             st.markdown(f"**관리자 댓글:** {admin_comment}")
 
         # 토글 형태로 관리자 삭제 기능
-        with st.expander("관리자 삭제 기능"):
+        with st.expander("삭제"):
             delete_pass = st.text_input("관리자 비밀번호 (삭제용)", type="password", key=f"delete_password_{review_id}")
             if st.button("리뷰 삭제", key=f"delete_{review_id}"):
                 if delete_pass == "0328":
@@ -72,7 +72,7 @@ if rows:
                     st.error("비밀번호가 틀렸습니다. 리뷰를 삭제할 수 없습니다.")
 
         # 토글 형태로 관리자 댓글 추가 기능
-        with st.expander("관리자 댓글 추가"):
+        with st.expander("댓글"):
             admin_comment_input = st.text_area("관리자 댓글 입력", key=f"admin_comment_input_{review_id}")
             comment_pass = st.text_input("관리자 비밀번호 (댓글 추가용)", type="password", key=f"admin_comment_password_{review_id}")
             if st.button("댓글 추가", key=f"add_comment_{review_id}"):
